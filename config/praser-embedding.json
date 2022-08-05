@@ -1,0 +1,16 @@
+{
+    "dataset": "uci",
+    "dataset_version": "20_120",
+    "seed": 2022,
+    "augmentation": "spanmasking",
+    "pretrained_model_path": "saved/pretrain/spanmasking@40.0/uci20_120-embed_dim72-lr1e-04/model_epoch3050.pth",
+    "mask_cfg": [
+        0.4,
+        6,
+        10,
+        0.8,
+        0.0
+    ],
+    "augment_rate": 0.4,
+    "save_dir": "./saved/embedding/spanmasking@40.0/uci-embed_dim72-lr1e-04/"
+}

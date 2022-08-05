@@ -1,0 +1,9 @@
+{
+    "dataset": "uci",
+    "dataset_version": "20_120",
+    "seed": 2022,
+    "augmentation": "spanmasking",
+    "model": "gru",
+    "pretrained_embedding_path": "saved/embedding/spanmasking@40.0/uci-embed_dim72-lr1e-04/embed.npy",
+    "save_dir": "./saved/gru-spanmasking/uci-embed_dim6-lr1e-04/"
+}

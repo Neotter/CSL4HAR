@@ -1,0 +1,14 @@
+# 进度
+## 已完成:
+- main_libert_pretrain.py
+  - praser_libert_pretrain.py
+  - dataloader_libert_pretrain.py
+  - libert.py
+  - bert.py
+  - preprocessing.masking.py
+  - preprocessing.normalization.py
+## 进行中:
+- main_libert_gru.py
+  - praser_libert_gru.py
+  - dataloader_libert.py
+  - gru.py

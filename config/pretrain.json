@@ -1,0 +1,11 @@
+{
+    "batch_size": 256,
+    "training_rate": 0.8,
+    "vali_rate": 0.1,
+    "label_index": 0,
+    "lr": 1e-4,
+    "n_epochs": 3200,
+    "saving_epoch": 300,
+    "early_stopping_epoch": 0,
+    "testing_epoch": 1
+}
