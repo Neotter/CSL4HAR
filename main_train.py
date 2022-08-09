@@ -16,7 +16,7 @@ from model.cnn2d import CNN2D
 from model.decoder_projhead import ProjectHead
 from model.gru import GRU
 from model.lstm import LSTM
-from praser.train import *
+from praser.csl4har import *
 from utils.log_helper import *
 from utils.get_device import *
 from utils.metrics import calc_acc, calc_confus_matric, calc_f1
@@ -30,7 +30,8 @@ def train(args):
     logging.info(args)
 
     # tensorboard
-    writer = SummaryWriter(args.save_dir)
+    if args.enable_tensor_board == True:
+        writer = SummaryWriter(args.save_dir)
 
     # set seed
     random.seed(args.seed)
@@ -50,25 +51,25 @@ def train(args):
 
 
     # construct model & optimizer
-    if hasattr(args, 'pretrained_embedding_path'):
-        input_dim = 72
+    if hasattr(args, 'load_path'):
+        input_dim = args.encoder_cfg.embed_dim
     else:
         input_dim = dataloader.dataset_cfg.dimension
     output_dim = args.dataset_cfg.dimension
 
     if args.model == 'gru':
-        model = GRU(args.model_cfg, input_dim, output_dim)
+        model = GRU(args.ds_model_cfg, input_dim, output_dim)
     if args.model == 'lstm':
-        model = LSTM(args.model_cfg, input_dim, output_dim)
+        model = LSTM(args.ds_model_cfg, input_dim, output_dim)
     if args.model == 'cnn1d':
-        model = CNN1D(args.model_cfg, input_dim, output_dim)
+        model = CNN1D(args.ds_model_cfg, input_dim, output_dim)
     if args.model == 'cnn2d':
-        model = CNN2D(args.model_cfg, input_dim, output_dim)
+        model = CNN2D(args.ds_model_cfg, input_dim, output_dim)
     if args.model == 'attn':
-        model = ATTN(args.model_cfg, input_dim, output_dim)
+        model = ATTN(args.ds_model_cfg, input_dim, output_dim)
         
     model.to(device)
-    optimizer = torch.optim.Adam(params=model.parameters(), lr=args.train_cfg.lr)
+    optimizer = torch.optim.Adam(params=model.parameters(), lr=args.ds_train_cfg.lr)
 
     logging.info(model)
     logging.info(optimizer)
@@ -76,22 +77,22 @@ def train(args):
     # initialize metrics
     best_epoch = -1
     epoch_list = []
-    metrics_list = {'acc': [],'f1': [], 'confus_matrix': []}
+    metrics_list = {'train_acc': [],'train_f1': [], 
+        'valid_acc': [],'valid_f1': [], 
+        'test_acc': [],'test_f1': [],
+        'test_confus_matrix': []}
 
     time0 = time()
-    for epoch in range(1, args.train_cfg.n_epochs+1):
+    for epoch in range(1, args.ds_train_cfg.n_epochs+1):
         ce_total_loss = 0.0
         model.train()
         time1 = time()
+        # because only fewer labeled sample for training, n_batch is small
         n_batch = len(data_loader_train)
 
         for iter, batch in enumerate(data_loader_train):
             time2 = time()
             batch = [x.to(device) for x in batch]
-            # y_true, y_postive = batch
-            # [a,b,c],[a_h,b_h,c_h] => [a,a_h,b,b_h,c,c_h]
-            # inputs = torch.stack([x.to(device) for x in inputs for n in range(2)])
-            # inputs = torch.stack(list(chain.from_iterable(zip(y_true, y_postive)))).to(device)
             optimizer.zero_grad()
 
             ce_loss = model(batch, mode='train')
@@ -106,39 +107,53 @@ def train(args):
             ce_total_loss += ce_loss.item()
 
         ## evaluate
-        if (epoch % args.train_cfg.testing_epoch) == 0 or epoch == args.train_cfg.n_epochs:
+        if (epoch % args.ds_train_cfg.testing_epoch) == 0 or epoch == args.ds_train_cfg.n_epochs:
             time3 = time()
             labels_pred_train, metrics_dict_train = evaluate(model, data_loader_train, device)
             labels_pred_valid, metrics_dict_valid = evaluate(model, data_loader_vali, device)
             labels_pred_test, metrics_dict_test = evaluate(model, data_loader_test, device)
 
-            logging.info('Evaluation: Epoch {:04d} | Time {:.1f}s | Accuracy {:.3f}/{:.3f}/{:.3f} | F1-score {:.3f}/{:.3f}/{:.3f}'.format(epoch, time() - time0, metrics_dict_train['acc'], metrics_dict_valid['acc'], metrics_dict_test['acc'], metrics_dict_train['f1'], metrics_dict_valid['f1'], metrics_dict_test['f1']))
+            if args.enable_tensor_board == True:
+                writer.add_scalar('CE_loss_training', ce_total_loss / n_batch, epoch)
+
+            # epoch | epoch_time / total_time | Iter_mean_loss/test_loss | 
+            logging.info('Evaluation: Epoch {:04d} | Time {:.1f}/{:.1f}s | Accuracy {:.3f}/{:.3f}/{:.3f} | F1-score {:.3f}/{:.3f}/{:.3f}'.format(epoch, time3-time1, time() - time0, metrics_dict_train['acc'], metrics_dict_valid['acc'], metrics_dict_test['acc'], metrics_dict_train['f1'], metrics_dict_valid['f1'], metrics_dict_test['f1']))
             epoch_list.append(int(epoch))
-            metrics_list['acc'].append(metrics_dict_test['acc'])
-            metrics_list['f1'].append(metrics_dict_test['f1'])
-            metrics_list['confus_matrix'].append(metrics_dict_test['confus_matrix'])
+            
+            metrics_list['train_acc'].append(metrics_dict_train['acc'])
+            metrics_list['train_f1'].append(metrics_dict_train['f1'])
+            metrics_list['valid_acc'].append(metrics_dict_valid['acc'])
+            metrics_list['valid_f1'].append(metrics_dict_valid['f1'])
+            metrics_list['test_acc'].append(metrics_dict_test['acc'])
+            metrics_list['test_f1'].append(metrics_dict_test['f1'])
+            metrics_list['test_confus_matrix'].append(metrics_dict_test['confus_matrix'])
 
-            best_acc, should_stop = early_stopping(metrics_list['acc'], args.train_cfg.early_stopping_epoch, criterion=max)
+            best_acc, should_stop = early_stopping(metrics_list['valid_acc'], args.ds_train_cfg.early_stopping_epoch, criterion=max)
 
-            if should_stop and args.train_cfg.early_stopping_epoch != 0:
+            if should_stop and args.ds_train_cfg.early_stopping_epoch != 0:
                 break
 
-            if metrics_list['acc'].index(best_acc) == len(epoch_list) - 1:
+            if metrics_list['valid_acc'].index(best_acc) == len(epoch_list) - 1:
                 save_model(model, args.save_dir, epoch, best_epoch)
                 logging.info('Save model on epoch {:04d}!'.format(epoch))
                 best_epoch = epoch
     # save 
-    metrics_df = [epoch_list]
-    metrics_cols = ['epoch_idx','Accuracy','F1-score','Confusion_matrix']
-    metrics_df.append(metrics_list['acc'])
-    metrics_df.append(metrics_list['f1'])
-    metrics_df.append(metrics_list['confus_matrix'])
+    metrics_cols = ['epoch_idx','Train_Accuracy','Train_F1-score','Valid_Accuracy','Valid_F1-score','Test_Accuracy','Test_F1-score','Confusion_matrix']
+    metrics_df = [epoch_list,
+        metrics_list['train_acc'],metrics_list['train_f1'],
+        metrics_list['valid_acc'],metrics_list['valid_f1'],
+        metrics_list['test_acc'],metrics_list['test_f1'],
+        metrics_list['test_confus_matrix']
+        ]
 
     metrics_df = pd.DataFrame(metrics_df).transpose()
     metrics_df.columns = metrics_cols
     metrics_df.to_csv(args.save_dir + '/metrics.tsv', sep='\t', index=False)
     
-    pass
+    # print best metrics
+    best_metrics = metrics_df.loc[metrics_df['epoch_idx'] == best_epoch].iloc[0].to_dict()
+    logging.info('Best Evaluation: Epoch {:04d} | Total Time {:.1f}s | Accuracy {:.3f}/{:.3f}/{:.3f} | F1-score {:.3f}/{:.3f}/{:.3f}'.format(
+        int(best_metrics['epoch_idx']), time()-time0 , best_metrics['Train_Accuracy'], best_metrics['Valid_Accuracy'], best_metrics['Test_Accuracy'], best_metrics['Train_F1-score'], best_metrics['Valid_F1-score'], best_metrics['Test_F1-score']))
 
 def evaluate(model, dataloader, device, model_file=None, load_self=False):
     model.eval()
@@ -158,10 +173,9 @@ def evaluate(model, dataloader, device, model_file=None, load_self=False):
             label_pred = model(embed,  mode='predict')
             labels_pred.append(label_pred)
             labels.append(label)
-    # 预处理
     labels_pred = torch.cat(labels_pred, 0)
     labels = torch.cat(labels, 0)
-    # 丢到cpu
+    # to cpu
     labels_pred = labels_pred.cpu().numpy()
     labels_pred = np.argmax(labels_pred, 1)
     labels = labels.cpu().numpy()
@@ -176,5 +190,5 @@ def evaluate(model, dataloader, device, model_file=None, load_self=False):
     return labels_pred, metrics_dict
 
 if __name__ == "__main__":
-    args = parse_args()
+    args = parse_args('train')
     train(args)

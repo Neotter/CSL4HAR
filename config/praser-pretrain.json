@@ -1,15 +1,11 @@
 {
-    "dataset": "hhar",
+    "dataset": "uci",
     "dataset_version": "20_120",
     "seed": 2022,
     "augmentation": "spanmasking",
-    "mask_cfg": [
-        0.4,
-        6,
-        10,
-        0.8,
-        0.0
-    ],
+    "enable_tensor_board": false,
+    "load_path": false,
+    "model": "gru",
     "augment_rate": 0.4,
-    "save_dir": "./saved/pretrain/spanmasking@40.0/hhar20_120-embed_dim72-lr1e-04/"
+    "save_dir": "./saved/pretrain/spanmasking@40.0/uci20_120-ed72-lr1e-03/"
 }

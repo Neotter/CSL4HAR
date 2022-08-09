@@ -62,7 +62,7 @@ class DatasetSelector4Pretrain(object):
             merge = 0,
             merge_mode=self.merge_mode
             )
-        
+        # vali used for selecting the best pretrained model
         data_set_train = self.Dataset4Pretrain(data_train, label_train, pipeline=self.pipeline)
         data_set_vali = self.Dataset4Pretrain(data_vali, label_vali, pipeline=self.pipeline)
 
@@ -114,9 +114,7 @@ class Dataset4Scsense(Dataset):
         # seq是需要predict的值
         for proc in self.pipeline:
             instance = proc(instance)
-        seq_true = instance
-        seq_positive = instance
-        return torch.from_numpy(seq_true), torch.from_numpy(seq_positive)
+        return torch.from_numpy(instance), torch.from_numpy(instance), torch.from_numpy(instance)
 
     def __len__(self):
         return len(self.data)
@@ -136,7 +134,7 @@ class Dataset4Clipping(Dataset):
             if type(proc) == Normalization:
                 raw_seq = instance
         clipped_seq = instance
-        return torch.from_numpy(raw_seq), torch.from_numpy(clipped_seq)
+        return torch.from_numpy(raw_seq), torch.from_numpy(raw_seq), torch.from_numpy(clipped_seq)
 
     def __len__(self):
         return len(self.data)

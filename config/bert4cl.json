@@ -1,0 +1,13 @@
+{
+		"input_dim" : 6,
+        "embed_dim": 72,
+        "hidden_dim": 72,
+        "ff_hidden_dim": 144,
+		"n_layers": 1,
+		"n_heads": 4,
+		"seq_len": 120,
+		"prob_drop_hidden": 0.4,
+		"p_drop_attn": 0.4,
+		"embed_norm": true,
+		"fix_bert": false
+}

@@ -1,9 +1,11 @@
 '''
 Date: 2022-04-13 17:05:36
 LastEditors: MonakiChen
-LastEditTime: 2022-07-25 13:27:21
-FilePath: \CODE_V1\model\bert4cl.py
+LastEditTime: 2022-08-09 16:52:04
+FilePath: \CSL4HAR\model\bert4cl.py
 '''
+import json
+from typing import NamedTuple
 import torch
 import torch.nn as nn
 from model.bert import BERT
@@ -11,11 +13,27 @@ from model.func_loss import mse_loss
 import torch.nn.functional as F
 from itertools import chain
 
+class BERT4CLConfig(NamedTuple):
+    "Configuration for BERT4CL model"
+    input_dim: int = 6 # Raw Data Dimension
+    embed_dim: int = 72  # Embedding Dimension
+    hidden_dim: int = 72  # Dimension of Intermediate Layers in Positionwise Feedforward Net
+    ff_hidden_dim: int = 144  # Factorized embedding parameterization
+    n_layers: int = 4  # Numher of BERT4CL Hidden Layers
+    n_heads: int = 4  # Numher of Heads in Multi-Headed Attention Layers
+    seq_len: int = 120  # Maximum Length for Positional Embeddings
+    prob_drop_hidden: float = 0.1
+    p_drop_attn: float = 0.1
+    embed_norm: bool = True # Switch of embedding normalization
+    fix_bert: bool = False # Switch of fixing BERT parameters
 
+    @classmethod
+    def from_json(cls, file): # load config from json file
+        return cls(**json.load(open(file, "r")))
 
 class BERT4CL(nn.Module):
 
-    def __init__(self, cfg, input_dim, embed_dim, following_model = None):
+    def __init__(self, cfg, input_dim, embed_dim, loss_fn = None, following_model = None):
         super().__init__()
         # self.augmentation = cfg.augmentation
         self.bert = BERT(cfg, input_dim, embed_dim) # encoder
@@ -25,71 +43,31 @@ class BERT4CL(nn.Module):
             for p in self.bert.parameters():
                 p.requires_grad = False
         self.output_layer = following_model
-        self.pretrain_criterion = nn.MSELoss(reduction='none')
-        self.train_criterion = nn.CrossEntropyLoss()
+
+        self.loss_fn = loss_fn
         
     def forward(self, *input, mode):
-
         if mode == 'pretrain':
-            return self.calc_info_nce_loss(*input)
-        if mode == 'pretrain_predict':
-            return self.pretrain_predict(*input)
-
-        if mode == 'train':
-            return self.calc_ce_loss(*input)
+            return self.calc_pretrain_loss(*input)
         if mode == 'predict':
             return self.predict(*input)
+        
+    def predict(self, input_seqs):
+        embeddings = self.bert(input_seqs)
+        if not self.output_layer: # output embeddings
+            return embeddings
+        y_pred = self.output_layer(embeddings)
+        return y_pred
 
-    def pretrain_predict(self, input_seqs):
-        h = self.bert(input_seqs)
-        if not self.output_layer:
-            return h
-        # h = h.mean(1) ######
-        embedding = self.output_layer(h)
-        # if self.augmentation == 'clipping':
-        embedding = embedding.mean(1)
-        return embedding
+    def calc_pretrain_loss(self, batch, tau=0.05):
+        x_anchor, x_positive_1, x_positive_2 = batch
+        x_anchor = x_positive_1
+        x_positive = x_positive_2
+        x_pair = torch.stack(list(chain.from_iterable(zip(x_anchor, x_positive))))
+        y_pred = self.predict(x_pair)
 
-    def predict(self, input_seqs, training=False): #, training
-        h = self.bert(input_seqs)
-        h = self.output_layer(h, training)
-        return h
+        return self.loss_fn(y_pred,tau)
 
-    def calc_ce_loss(self, batch):
-        inputs, label = batch
-        logits = self.predict(inputs, True)
-        loss = self.train_criterion(logits, label) 
-        return loss
-
-    def calc_info_nce_loss(self, batch, tau=0.05):
-        # for spanmasking
-        # if self.augmentation == 'spanmasking' or self.augmentation == 'delwords':
-        y_anchor, y_positive_1, y_positive_2 = batch
-        y_anchor = y_positive_1
-        y_positive = y_positive_2
-        input = torch.stack(list(chain.from_iterable(zip(y_anchor, y_positive))))
-        y_pred = self.pretrain_predict(input)
-        y_pred = y_pred.view([y_pred.shape[0],-1])
-
-        # for clipping and delwords
-        # if self.augmentation == 'clipping':
-        # y_anchor, y_positive = batch
-        # y_anchor_pred = self.pretrain_predict(y_anchor)
-        # y_anchor_pred = y_anchor_pred.view([y_anchor_pred.shape[0],-1])
-        # y_positive_pred = self.pretrain_predict(y_positive)
-        # y_positive_pred = y_positive_pred.view([y_positive_pred.shape[0],-1])
-        # y_pred = torch.stack(list(chain.from_iterable(zip(y_anchor_pred, y_positive_pred))))
-        # y_pred = y_pred.view([y_pred.shape[0],-1])
-
-        # ids is y positive, y_true is label
-        ids = torch.arange(0, y_pred.shape[0]).cuda()
-        y_true = ids + 1 - ids % 2 * 2
-        similarities = F.cosine_similarity(y_pred.unsqueeze(1), y_pred.unsqueeze(0), dim=2)
-        # similarities = self.pretrain_criterion(y_pred.unsqueeze(1), y_pred.unsqueeze(0))
-        # 屏蔽对角矩阵，即自身相等的loss
-        similarities = similarities - torch.eye(y_pred.shape[0]).cuda() * 1e12
-        similarities = similarities / tau
-        return torch.mean(F.cross_entropy(similarities, y_true))
     
     def load_self(self, model_file, map_location=None):
             state_dict = self.state_dict()

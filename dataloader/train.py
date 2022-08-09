@@ -1,3 +1,9 @@
+'''
+Date: 2022-08-05 20:13:48
+LastEditors: MonakiChen
+LastEditTime: 2022-08-09 16:27:09
+FilePath: \CSL4HAR\dataloader\train.py
+'''
 import numpy as np
 from torch.utils.data import DataLoader, Dataset
 
@@ -14,7 +20,7 @@ class DatasetSelector4Train(object):
         self.dataset = args.dataset
         self.dataset_version = args.dataset_version
         self.dataset_cfg = args.dataset_cfg
-        self.pretrained_embedding_path = args.pretrained_embedding_path        
+        self.pretrained_embedding_path = args.load_path        
 
         """ Load raw dataset """
         self.data, self.labels = load_raw_data(self.dataset, self.dataset_version)
@@ -27,16 +33,16 @@ class DatasetSelector4Train(object):
         self.merge = 20
 
         """ set datset config for train """
-        self.label_index = args.train_cfg.label_index
+        self.label_index = args.ds_train_cfg.label_index
         self.label_names, self.label_num = load_dataset_label_names(self.dataset_cfg, self.label_index)
 
-        self.batch_size = args.train_cfg.batch_size
-        self.label_rate = args.train_cfg.label_rate
-        self.balance = args.train_cfg.balance
-        self.training_rate = args.train_cfg.training_rate
-        self.vali_rate = args.train_cfg.vali_rate
+        self.batch_size = args.ds_train_cfg.batch_size
+        self.label_rate = args.ds_train_cfg.label_rate
+        self.balance = args.ds_train_cfg.balance
+        self.training_rate = args.ds_train_cfg.training_rate
+        self.vali_rate = args.ds_train_cfg.vali_rate
 
-        self.pipeline = [Normalization(args.model_cfg.input_dim)]
+        self.pipeline = [Normalization(args.ds_model_cfg.input_dim)]
         self.Dataset4Embedding = Dataset4Train
 
     def get_dataloader(self):

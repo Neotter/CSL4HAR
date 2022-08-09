@@ -25,7 +25,7 @@
             "program": "main_embedding.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "args": ["-d", "uci", "-v", "20_120", "-a","spanmasking", "-p", "./saved/pretrain/spanmasking/uci-embed_dim72-lr1e-03/model_epoch2872.pth"],
+            "args": ["-d", "uci", "-v", "20_120", "-a","spanmasking"],
             "env": { "CUDA_VISIBLE_DEVICES": "0"}
         },
         {
@@ -37,7 +37,7 @@
             "program": "main_train.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "args": ["-d", "uci", "-v", "20_120", "-m", "gru", "-p", "./saved/embedding/spanmasking/uci-embed_dim72-lr1e-03/embed.npy"],
+            "args": ["-d", "uci", "-v", "20_120", "-m", "gru"],
             "env": { "CUDA_VISIBLE_DEVICES": "0"}
         }
     ]

@@ -1,3 +1,9 @@
+'''
+Date: 2022-08-05 20:13:48
+LastEditors: MonakiChen
+LastEditTime: 2022-08-09 16:52:21
+FilePath: \CSL4HAR\model\lstm.py
+'''
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -6,13 +12,13 @@ from typing import NamedTuple
 import json
 
 class LSTMConfig(NamedTuple):
-    "Configuration for LIBERT model"
+    "Configuration for BERT4CL model"
     seq_len: int = 20  # Maximum Length for Positional Embeddings
     input_dim: int = 6 # GRU Input Dimension
     embed_dim = input_dim
     num_rnn: int = 2  # number of rnn
     num_layers: str = "[2, 1]"  # Factorized embedding parameterization
-    rnn_io: int = "[[6,20], [20, 10]]"  # Numher of libert Hidden Layers
+    rnn_io: int = "[[6,20], [20, 10]]"  # Numher of BERT4CL Hidden Layers
     num_linear: int = 1  # Numher of Heads in Multi-Headed Attention Layers
     linear_io: str = "[[10, 3]]" # Switch of embedding normalization
     activ: bool = False # Switch of fixing BERT parameters

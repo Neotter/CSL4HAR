@@ -155,7 +155,9 @@ def prepare_simple_dataset_balance(data, labels, training_rate=0.8):
     labels_unique = np.unique(labels)
     label_num = []
     for i in range(labels_unique.size):
+        # summarize the num of instances of each label
         label_num.append(np.sum(labels == labels_unique[i]))
+    # if the num of instances of one label is small than the average label sparsity
     train_num = min(min(label_num), int(data.shape[0] * training_rate / len(label_num)))
     if train_num == min(label_num):
         print("Warning! You are using all of label %d." % label_num.index(train_num))

@@ -1,3 +1,9 @@
+'''
+Date: 2022-08-05 20:13:48
+LastEditors: MonakiChen
+LastEditTime: 2022-08-09 14:41:55
+FilePath: \CSL4HAR\main_embedding.py
+'''
 import os
 import random
 from time import time
@@ -6,7 +12,7 @@ import pandas as pd
 from model.bert4cl import BERT4CL
 
 from dataloader.embedding import *
-from praser.embedding import parse_args
+from praser.csl4har import parse_args
 from utils.log_helper import *
 from utils.get_device import *
 from utils.model_helper import *
@@ -37,15 +43,13 @@ def get_embedding(args):
     
     # construct model & optimizer
     input_dim = dataloader.dataset_cfg.dimension
-    embed_dim = args.model_cfg.embed_dim
+    embed_dim = args.encoder_cfg.embed_dim
 
     decoder = None
-    model = BERT4CL(args.model_cfg, input_dim, embed_dim, following_model=decoder)
+    model = BERT4CL(args.encoder_cfg, input_dim, embed_dim, following_model=decoder)
     optimizer = None
-
-    logging.info(model)
     
-    model = load_model(model, args.pretrained_model_path, load_self=False)
+    model = load_model(model, args.load_path, load_self=False)
     
     logging.info(model)
     model.to(device)
@@ -57,10 +61,11 @@ def get_embedding(args):
     model.eval()
 
     for iter, batch in enumerate(data_loader):
-        batch = map(lambda x: x.to(device), batch)
+        # batch = map(lambda x: x.to(device), batch)
+        batch = [x.to(device) for x in batch]
         seqs, label = batch
         with torch.no_grad():
-            embed = model(seqs, mode='pretrain_predict')
+            embed = model(seqs, mode='predict')
             embeds.append(embed)
             labels.append(label)
 
@@ -76,10 +81,10 @@ def load_embedding_label(model_file, dataset, dataset_version):
     return embed, labels
 
 if __name__ == "__main__":
-    args = parse_args()
+    args = parse_args('predict_embedding')
     dataloader, embeds = get_embedding(args)
 
     label_index = 0
     label_names, label_num = dataloader.label_names, dataloader.label_num
-    data_tsne, labels_tsne = plot_embedding(embeds, dataloader.label, label_index=label_index, reduce=1000, label_names=label_names)
+    data_tsne, labels_tsne = plot_embedding(embeds, dataloader.label, label_index=label_index, reduce=1000, label_names=label_names, saved_path=args.save_dir)
 
