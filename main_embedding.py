@@ -1,7 +1,7 @@
 '''
 Date: 2022-08-05 20:13:48
 LastEditors: MonakiChen
-LastEditTime: 2022-08-09 21:24:23
+LastEditTime: 2022-08-09 23:21:23
 FilePath: \CSL4HAR\main_embedding.py
 '''
 import os
@@ -12,7 +12,7 @@ import pandas as pd
 from model.bert4cl import BERT4CL
 
 from dataloader.embedding import *
-from parser.csl4har import parse_args
+from parse.csl4har import parse_args
 from utils.log_helper import *
 from utils.get_device import *
 from utils.model_helper import *

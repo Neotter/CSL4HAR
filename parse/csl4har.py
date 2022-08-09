@@ -1,8 +1,8 @@
 '''
 Date: 2022-04-13 13:27:44
 LastEditors: MonakiChen
-LastEditTime: 2022-08-09 21:27:20
-FilePath: \CSL4HAR\parser\csl4har.py
+LastEditTime: 2022-08-09 23:22:06
+FilePath: \CSL4HAR\parse\csl4har.py
 '''
 import argparse, json
 from dataset.config import DatasetConfig
