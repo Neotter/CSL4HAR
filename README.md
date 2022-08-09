@@ -1,7 +1,7 @@
 <!--
  * @Date: 2022-08-05 20:13:28
  * @LastEditors: MonakiChen
- * @LastEditTime: 2022-08-09 21:53:31
+ * @LastEditTime: 2022-08-09 23:10:57
  * @FilePath: \CSL4HAR\README.md
 -->
 # CSL4HAR
@@ -22,7 +22,7 @@ The code has been tested running under Python 3.6.5. The required packages are a
 # Usage
 To demonstrate the reproducibility of the best performance reported in our paper and faciliate researchers to track whether the model status is consistent with ours, we provide the best parameter settings (might be different for the custormized datasets) in the scripts.
 
-The instruction of commands has been clearly stated in the codes (see the parser function in parser/csl4har.py).
+The instruction of commands has been clearly stated in the codes (see the parse_args function in parse/csl4har.py).
 
 ## Pertrain encoder
 

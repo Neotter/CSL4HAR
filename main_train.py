@@ -16,7 +16,7 @@ from model.cnn2d import CNN2D
 from model.decoder_projhead import ProjectHead
 from model.gru import GRU
 from model.lstm import LSTM
-from parser.csl4har import *
+from parse.csl4har import *
 from utils.log_helper import *
 from utils.get_device import *
 from utils.metrics import calc_acc, calc_confus_matric, calc_f1

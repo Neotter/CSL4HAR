@@ -1,16 +1,14 @@
 import sys
 import random
-from itertools import chain
 from time import time
 import numpy as np
 import pandas as pd
-from sklearn.neural_network import MLPClassifier
 
 from dataloader.pretrain import DatasetSelector4Pretrain
 
 from model.bert4cl import *
 from model.decoder_projhead import ProjectHead
-from parser.csl4har import *
+from parse.csl4har import *
 from trainer.loss_fn import info_nce_loss
 from utils.log_helper import *
 from utils.get_device import *
