@@ -1,8 +1,8 @@
 '''
 Date: 2022-04-13 13:27:44
 LastEditors: MonakiChen
-LastEditTime: 2022-08-09 15:18:56
-FilePath: \CSL4HAR\praser\csl4har.py
+LastEditTime: 2022-08-09 21:27:20
+FilePath: \CSL4HAR\parser\csl4har.py
 '''
 import argparse, json
 from dataset.config import DatasetConfig
@@ -39,18 +39,18 @@ def parse_args(action=None):
 
     args = parser.parse_args()
 
-    # input
+    # dataset config
     args.dataset_cfg = DatasetConfig.load_dataset_cfg('./config/dataset.json',args.dataset, args.dataset_version)
-    # system
+    # encoder and pretrain config
     args.encoder_cfg = BERT4CLConfig.from_json('./config/bert4cl.json')
     args.train_cfg = PretrainConfig.from_json('./config/pretrain.json')
-    # augmentation
+    # augmentation config
     if args.augmentation == 'spanmasking':
         args.mask_cfg = MaskConfig.from_json('./config/mask.json')
         args.augment_rate = args.mask_cfg.mask_ratio
     if args.augmentation == 'delwords' or args.augmentation == 'clipping':
         args.augment_rate = 0.4
-    # action
+    # main action [pretrain, predict_embedding, train]
     if action == 'pretrain':
         # saved/pretrain/augmentation@augment_rate/dataset_name&version-embed_dim_lr
         save_dir = './saved/pretrain/{}@{}/{}{}-ed{}-lr{:.0e}/'.format(
@@ -97,7 +97,7 @@ def parse_args(action=None):
         config = json.load(open(args.config_path,"r"))
         args_dict.update(config)
     else:
-        args.config_path = './config/praser-{}.json'.format(action)
+        args.config_path = './config/parser-{}.json'.format(action)
         with open(args.config_path, 'wt') as f:
             args_dict = vars(args).copy()
             args_dict.pop('config_path', None)
