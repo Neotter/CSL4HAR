@@ -1,8 +1,8 @@
 <!--
  * @Date: 2022-08-05 20:13:28
  * @LastEditors: MonakiChen
- * @LastEditTime: 2022-08-09 23:21:42
- * @FilePath: \CSL4HAR\README.md
+ * @LastEditTime: 2022-08-11 16:46:26
+ * @FilePath: \undefinedd:\Project\CSL4HAR\README.md
 -->
 # CSL4HAR
 A contrastive representation learning framework for human activity recognition.
@@ -12,7 +12,7 @@ With the representations learned under easy-to-access unlabeled data, downstream
 ---
 
 # Environment Requirement
-The code has been tested running under Python 3.6.5. The required packages are as follows:
+The code has been tested running under Python 3.8.0. The required packages are as follows:
 - pytorch == 1.12.0
 - python == 3.8.0
 - scikit-learn == 1.1.1
