@@ -1,10 +1,8 @@
 import sys
 import random
-from itertools import chain
 from time import time
 import numpy as np
 import pandas as pd
-from sklearn.neural_network import MLPClassifier
 
 from dataloader.pretrain import DatasetSelector4Pretrain
 

@@ -1,7 +1,11 @@
 '''
 Date: 2022-08-05 20:13:48
 LastEditors: MonakiChen
+<<<<<<< HEAD
 LastEditTime: 2022-08-09 23:21:23
+=======
+LastEditTime: 2022-08-09 23:10:41
+>>>>>>> origin/dev
 FilePath: \CSL4HAR\main_embedding.py
 '''
 import os

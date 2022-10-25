@@ -1,5 +1,5 @@
 {
-    "dataset": "uci",
+    "dataset": "hhar",
     "dataset_version": "20_120",
     "seed": 2022,
     "augmentation": "spanmasking",
@@ -7,5 +7,5 @@
     "load_path": false,
     "model": "gru",
     "augment_rate": 0.4,
-    "save_dir": "./saved/pretrain/spanmasking@40.0/uci20_120-ed72-lr1e-03/"
+    "save_dir": "./saved/pretrain/spanmasking@40.0/hhar20_120-ed72-lr1e-03/"
 }

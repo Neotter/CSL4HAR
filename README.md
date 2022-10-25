@@ -1,8 +1,13 @@
 <!--
  * @Date: 2022-08-05 20:13:28
  * @LastEditors: MonakiChen
+<<<<<<< HEAD
  * @LastEditTime: 2022-08-11 16:46:26
  * @FilePath: \undefinedd:\Project\CSL4HAR\README.md
+=======
+ * @LastEditTime: 2022-08-09 23:10:57
+ * @FilePath: \CSL4HAR\README.md
+>>>>>>> origin/dev
 -->
 # CSL4HAR
 A contrastive representation learning framework for human activity recognition.
